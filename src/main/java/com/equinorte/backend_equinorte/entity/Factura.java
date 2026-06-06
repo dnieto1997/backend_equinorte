@@ -12,6 +12,8 @@ import java.util.List;
 @Table(name = "facturas")
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+
 public class Factura {
   @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
