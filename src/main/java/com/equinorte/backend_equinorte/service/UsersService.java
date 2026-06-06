@@ -7,15 +7,16 @@ import com.equinorte.backend_equinorte.dto.UsersDto;
 import com.equinorte.backend_equinorte.entity.TipoUsuario;
 
 
+
 public interface UsersService {
 
     UsersDto crearUser(UsersDto user);
 
     List<UsersDto> listarUsers();
 
-    Optional<UsersDto> obtenerUserPorId(Long id);
+    UsersDto obtenerUserPorId(Long id);
 
-    Optional<UsersDto> obtenerUserPorEmail(String email);
+    UsersDto obtenerUserPorEmail(String email);
 
     List<UsersDto> listarPorTipoUsuario(TipoUsuario tipoUsuario);
 

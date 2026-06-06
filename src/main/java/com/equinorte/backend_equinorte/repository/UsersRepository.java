@@ -13,7 +13,6 @@ import com.equinorte.backend_equinorte.entity.Users;
 @Repository
 public interface UsersRepository extends JpaRepository<Users, Long> {
 
-    Optional<Users> findByIdUser(Long idUser);
 
     Optional<Users> findByNombre(String nombre);
 

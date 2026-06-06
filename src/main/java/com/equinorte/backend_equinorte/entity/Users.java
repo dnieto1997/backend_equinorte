@@ -7,14 +7,13 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Users {
 
-   @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "id_user")
     private Long idUser;
 
@@ -28,7 +27,19 @@ public class Users {
     @Column(name = "tipo_usuario", nullable = false)
     private TipoUsuario tipoUsuario;
 
-    @Column(name = "fecha_creacion", nullable = false)
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        fechaActualizacion = LocalDateTime.now();
+    }
 }
