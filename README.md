@@ -289,115 +289,269 @@ DELETE /api/users/{id}
 
 
 
-# Módulo de Facturación
+##  Factura
 
-## Entidad Factura
+Representa la cabecera de la factura.
 
-Representa la cabecera de una factura.
+### Campos
 
-Campos principales:
+| Campo | Tipo | Descripción |
+|------|------|------|
+| idFactura | Long | Identificador único |
+| numeroFactura | String | Número único de factura |
+| subtotal | BigDecimal | Suma de los detalles |
+| iva | BigDecimal | IVA calculado (19%) |
+| total | BigDecimal | Total final |
+| fechaCreacion | LocalDateTime | Fecha automática de creación |
+| fechaActualizacion | LocalDateTime | Fecha automática de actualización |
 
-- idFactura
-- numeroFactura (único)
-- subtotal
-- iva
-- total
-- fechaCreacion
-- fechaActualizacion
+### Relaciones
 
-Relación:
-
-- Una Factura tiene una relación OneToMany con DetalleFactura.
-
----
-
-## Entidad DetalleFactura
-
-Campos principales:
-
-- idDetalle
-- producto
-- cantidad
-- precioUnitario
-- subtotal
-
-Relación:
-
-- Muchos DetalleFactura pertenecen a una Factura.
+- Una factura tiene múltiples `DetalleFactura`
+- Relación `OneToMany`
+- `CascadeType.ALL`
+- `orphanRemoval = true`
 
 ---
 
-## DTO FacturaDto
+##  DetalleFactura
 
-- idFactura
-- numeroFactura
-- lista de detalles
+Representa cada producto asociado a una factura.
 
----
+### Campos
 
-## DTO DetalleFacturaDto
+| Campo | Tipo | Descripción |
+|------|------|------|
+| idDetalle | Long | Identificador único |
+| producto | String | Nombre del producto |
+| cantidad | Integer | Cantidad del producto |
+| precioUnitario | BigDecimal | Precio unitario |
+| subtotal | BigDecimal | Subtotal calculado |
 
-- idDetalle
-- producto
-- cantidad
-- precioUnitario
+### Relaciones
 
----
-
-## Reglas de Negocio
-
-- Una factura tiene múltiples detalles.
-- El número de factura es único.
-- El cálculo de subtotal, IVA y total está definido en la entidad Factura.
-- La persistencia de detalles se realiza en cascada desde Factura.
-- No existe relación con Users.
+- Muchos detalles pertenecen a una factura
+- Relación `ManyToOne`
 
 ---
 
-## Repositories
+#  DTOs
 
-### FacturaRepository
-- findByNumeroFactura()
-- existsByNumeroFactura()
+##  FacturaDto
 
-### DetalleFacturaRepository
-- findByFacturaIdFactura()
+```java
+Long idFactura;
+String numeroFactura;
+List<DetalleFacturaDto> detalles;
+```
+
+##  DetalleFacturaDto
+
+```java
+Long idDetalle;
+String producto;
+Integer cantidad;
+BigDecimal precioUnitario;
+```
+
+##  RecalculoFacturaDto
+
+DTO utilizado para modificar el subtotal con validación de roles.
+
+```java
+BigDecimal nuevoSubtotal;
+TipoUsuario tipoUsuario;
+```
 
 ---
 
-## Estado del Proyecto
+#  Repositorios
 
-✔ Usuarios implementado  
-✔ Facturación implementado  
-✔ Relación Factura → DetalleFactura  
-✔ Arquitectura en capas  
+##  FacturaRepository
 
+Métodos implementados:
 
-## Estructura del módulo Factura
+```java
+findByNumeroFactura()
+existsByNumeroFactura()
+```
 
-### Endpoints disponibles
+## 📦 DetalleFacturaRepository
 
-#### Crear factura
+Métodos implementados:
 
--   **POST** `/api/facturas/crear`
+```java
+findByFacturaIdFactura()
+```
 
-#### Listar facturas
+---
 
--   **GET** `/api/facturas`
+# 📌 Service
 
-#### Obtener factura por ID
+##  FacturaService
 
--   **GET** `/api/facturas/buscar/{id}`
+Define las operaciones principales del módulo:
 
-#### Actualizar factura
+```java
+crearFactura()
+actualizarFactura()
+eliminarFactura()
+obtenerPorId()
+listarFacturas()
+recalcularFactura()
+```
 
--   **PUT** `/api/facturas/actualizar/{id}`
+---
 
-#### Recalcular factura
+# Lógica de Negocio
 
--   **PUT** `/api/facturas/recalcular/{id}`
+##  Crear Factura
 
-#### Eliminar factura
+### Validaciones
 
--   **DELETE** `/api/facturas/{id}`
+- El número de factura debe ser único.
 
+### Proceso
+
+1. Calcula el subtotal de cada detalle:
+
+```java
+subtotal = precioUnitario * cantidad
+```
+
+2. Calcula:
+   - Subtotal general
+   - IVA (19%)
+   - Total final
+
+3. Guarda la factura junto con sus detalles usando cascada.
+
+---
+
+##  Actualizar Factura
+
+### Proceso
+
+1. Busca la factura por ID.
+2. Elimina detalles anteriores.
+3. Agrega los nuevos detalles.
+4. Recalcula:
+   - Subtotal
+   - IVA
+   - Total
+
+---
+
+##  Eliminar Factura
+
+### Proceso
+
+- Valida existencia.
+- Elimina factura y detalles asociados.
+
+---
+
+##  Obtener Factura
+
+### Proceso
+
+- Busca factura por ID.
+- Lanza excepción si no existe.
+
+---
+
+##  Listar Facturas
+
+### Proceso
+
+- Retorna todas las facturas registradas.
+
+---
+
+#  Recalcular Factura
+
+Permite modificar el subtotal aplicando reglas de negocio según el tipo de usuario.
+
+##  Reglas por Rol
+
+| Tipo Usuario | Incremento Máximo Permitido |
+|------|------|
+| OPERADOR | 20.000 |
+| SUPERVISOR | 50.000 |
+
+##  Proceso de Recalculo
+
+1. Calcula la diferencia entre subtotales.
+2. Valida permisos según el rol.
+3. Calcula el factor proporcional:
+
+```java
+factor = nuevoSubtotal / subtotalActual
+```
+
+4. Ajusta proporcionalmente cada detalle.
+5. Recalcula:
+   - Subtotal
+   - IVA (19%)
+   - Total final
+
+---
+
+# API REST - Facturas
+
+## Base URL
+
+```http
+/api/facturas
+```
+
+## Crear Factura
+
+```http
+POST /api/facturas/crear
+```
+
+## Listar Facturas
+
+```http
+GET /api/facturas
+```
+
+## Obtener Factura por ID
+
+```http
+GET /api/facturas/buscar/{id}
+```
+
+## Actualizar Factura
+
+```http
+PUT /api/facturas/actualizar/{id}
+```
+
+## Recalcular Factura
+
+```http
+PUT /api/facturas/recalcular/{id}
+```
+
+##  Eliminar Factura
+
+```http
+DELETE /api/facturas/{id}
+```
+
+---
+
+# Estado del Módulo
+
+## ✔ Funcionalidades Implementadas
+
+- ✔ CRUD completo de facturas
+- ✔ Relación Factura → DetalleFactura
+- ✔ Reglas de negocio por tipo de usuario
+- ✔ Recalculo proporcional implementado
+- ✔ Arquitectura en capas
+- ✔ API REST funcional
+
+---

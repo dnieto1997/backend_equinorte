@@ -37,14 +37,13 @@ INSERT INTO facturas (
     fecha_actualizacion
 ) VALUES (
     1,
-    'FAC-INIT-001',
-    810000,
-    153900,
-    963900,
+    'FAC-EQ-001',
+    2430000,
+    461700,
+    2891700,
     NOW(),
     NULL
 );
-
 
 INSERT INTO detalle_facturas (
     id_detalle,
@@ -56,25 +55,25 @@ INSERT INTO detalle_facturas (
 ) VALUES
 (
     1,
-    'Teclado mecánico',
+    'Alquiler excavadora hidráulica 320D',
     2,
-    80000,
-    160000,
+    850000,
+    1700000,
     1
 ),
 (
     2,
-    'Mouse gamer',
-    1,
-    50000,
-    50000,
+    'Alquiler de andamios metálicos (kit semanal)',
+    5,
+    120000,
+    600000,
     1
 ),
 (
     3,
-    'Monitor 24 pulgadas',
-    1,
-    600000,
-    600000,
+    'Alquiler vibrador de concreto portátil',
+    2,
+    95000,
+    190000,
     1
 );

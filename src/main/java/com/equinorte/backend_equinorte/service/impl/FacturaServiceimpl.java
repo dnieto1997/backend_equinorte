@@ -22,182 +22,196 @@ import com.equinorte.backend_equinorte.service.FacturaService;
 @Service
 public class FacturaServiceimpl implements FacturaService {
 
-    @Autowired
-    private FacturaRepository facturaRepository;
+        @Autowired
+        private FacturaRepository facturaRepository;
 
-    @Autowired
-    private FacturaMapper facturaMapper;
+        @Autowired
+        private FacturaMapper facturaMapper;
 
-    @Override
-    public FacturaDto crearFactura(FacturaDto facturaDto) {
-        if (facturaRepository.findByNumeroFactura(facturaDto.getNumeroFactura()).isPresent()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Ya existe una factura con el número: " + facturaDto.getNumeroFactura());
+        @Override
+        public FacturaDto crearFactura(FacturaDto facturaDto) {
+                if (facturaRepository.findByNumeroFactura(facturaDto.getNumeroFactura()).isPresent()) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Ya existe una factura con el número: " + facturaDto.getNumeroFactura());
+                }
+
+                Factura factura = new Factura();
+
+                factura.setNumeroFactura(facturaDto.getNumeroFactura());
+
+                List<DetalleFactura> detalles = facturaDto.getDetalles()
+                                .stream()
+                                .map(d -> {
+                                        DetalleFactura det = new DetalleFactura(null, null, null, null, null, factura);
+
+                                        det.setProducto(d.getProducto());
+                                        det.setCantidad(d.getCantidad());
+                                        det.setPrecioUnitario(d.getPrecioUnitario());
+
+                                        BigDecimal subtotal = d.getPrecioUnitario()
+                                                        .multiply(BigDecimal.valueOf(d.getCantidad()));
+
+                                        det.setSubtotal(subtotal);
+
+                                        det.setFactura(factura);
+
+                                        return det;
+                                }).toList();
+
+                factura.setDetalles(detalles);
+
+                BigDecimal subtotal = detalles.stream()
+                                .map(DetalleFactura::getSubtotal)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                factura.setSubtotal(subtotal);
+
+                BigDecimal iva = subtotal.multiply(new BigDecimal("0.19"));
+                factura.setIva(iva);
+                factura.setTotal(subtotal.add(iva));
+
+                return facturaMapper.toDto(
+                                facturaRepository.save(factura));
         }
 
-        Factura factura = new Factura();
+        @Override
+        public FacturaDto actualizarFactura(Long id, FacturaDto facturaDto) {
 
-        factura.setNumeroFactura(facturaDto.getNumeroFactura());
+                Factura factura = facturaRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Factura no encontrada con id: " + id));
 
-        List<DetalleFactura> detalles = facturaDto.getDetalles()
-                .stream()
-                .map(d -> {
-                    DetalleFactura det = new DetalleFactura(null, null, null, null, null, factura);
+                factura.getDetalles().clear();
 
-                    det.setProducto(d.getProducto());
-                    det.setCantidad(d.getCantidad());
-                    det.setPrecioUnitario(d.getPrecioUnitario());
+                List<DetalleFactura> nuevosDetalles = facturaDto.getDetalles()
+                                .stream()
+                                .map(d -> {
 
-                    BigDecimal subtotal = d.getPrecioUnitario()
-                            .multiply(BigDecimal.valueOf(d.getCantidad()));
+                                        DetalleFactura det = new DetalleFactura();
 
-                    det.setSubtotal(subtotal);
+                                        det.setProducto(d.getProducto());
+                                        det.setCantidad(d.getCantidad());
+                                        det.setPrecioUnitario(d.getPrecioUnitario());
 
-                    det.setFactura(factura);
+                                        BigDecimal subtotal = d.getPrecioUnitario()
+                                                        .multiply(BigDecimal.valueOf(d.getCantidad()));
 
-                    return det;
-                }).toList();
+                                        det.setSubtotal(subtotal);
 
-        factura.setDetalles(detalles);
+                                        det.setFactura(factura);
 
-        BigDecimal subtotal = detalles.stream()
-                .map(DetalleFactura::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                                        return det;
+                                })
+                                .toList();
 
-        factura.setSubtotal(subtotal);
+                factura.getDetalles().addAll(nuevosDetalles);
 
-        BigDecimal iva = subtotal.multiply(new BigDecimal("0.19"));
-        factura.setIva(iva);
-        factura.setTotal(subtotal.add(iva));
+                BigDecimal subtotal = nuevosDetalles.stream()
+                                .map(DetalleFactura::getSubtotal)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return facturaMapper.toDto(
-                facturaRepository.save(factura));
-    }
+                factura.setSubtotal(subtotal);
 
-    @Override
-    public FacturaDto actualizarFactura(Long id, FacturaDto facturaDto) {
+                BigDecimal iva = subtotal.multiply(new BigDecimal("0.19"));
+                factura.setIva(iva);
+                factura.setTotal(subtotal.add(iva));
 
-        Factura factura = facturaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Factura no encontrada con id: " + id));
-
-        factura.setNumeroFactura(facturaDto.getNumeroFactura());
-
-        factura.getDetalles().clear();
-
-        List<DetalleFactura> nuevosDetalles = facturaDto.getDetalles()
-                .stream()
-                .map(d -> {
-                    DetalleFactura det = new DetalleFactura(id, null, null, null, null, factura);
-
-                    det.setProducto(d.getProducto());
-                    det.setCantidad(d.getCantidad());
-                    det.setPrecioUnitario(d.getPrecioUnitario());
-
-                    BigDecimal subtotal = d.getPrecioUnitario()
-                            .multiply(BigDecimal.valueOf(d.getCantidad()));
-
-                    det.setSubtotal(subtotal);
-
-                    det.setFactura(factura);
-
-                    return det;
-                }).toList();
-
-        factura.getDetalles().addAll(nuevosDetalles);
-
-        BigDecimal subtotal = nuevosDetalles.stream()
-                .map(DetalleFactura::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        factura.setSubtotal(subtotal);
-
-        BigDecimal iva = subtotal.multiply(new BigDecimal("0.19"));
-        factura.setIva(iva);
-        factura.setTotal(subtotal.add(iva));
-
-        return facturaMapper.toDto(
-                facturaRepository.save(factura));
-    }
-
-    @Override
-    public void eliminarFactura(Long id) {
-
-        if (!facturaRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Factura no encontrada con id: " + id);
+                return facturaMapper.toDto(
+                                facturaRepository.save(factura));
         }
 
-        facturaRepository.deleteById(id);
-    }
+        @Override
+        public void eliminarFactura(Long id) {
 
-    @Override
-    public FacturaDto obtenerPorId(Long id) {
+                if (!facturaRepository.existsById(id)) {
+                        throw new ResourceNotFoundException("Factura no encontrada con id: " + id);
+                }
 
-        Factura factura = facturaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Factura no encontrada con id: " + id));
-
-        return facturaMapper.toDto(factura);
-    }
-
-    @Override
-    public List<FacturaDto> listarFacturas() {
-
-        return facturaRepository.findAll()
-                .stream()
-                .map(facturaMapper::toDto)
-                .toList();
-    }
-
-    @Override
-    public FacturaDto recalcularFactura(Long idFactura, RecalculoFacturaDto dto) {
-
-        Factura factura = facturaRepository.findById(idFactura)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Factura no encontrada con id: " + idFactura));
-
-        BigDecimal subtotalActual = factura.getSubtotal();
-        BigDecimal nuevoSubtotal = dto.getNuevoSubtotal();
-
-        BigDecimal diferencia = nuevoSubtotal.subtract(subtotalActual);
-
-        if (dto.getTipoUsuario() == TipoUsuario.OPERADOR &&
-                diferencia.compareTo(new BigDecimal("20000")) > 0) {
-
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Operador solo puede aumentar hasta 20.000");
+                facturaRepository.deleteById(id);
         }
 
-        if (dto.getTipoUsuario() == TipoUsuario.SUPERVISOR &&
-                diferencia.compareTo(new BigDecimal("50000")) > 0) {
+        @Override
+        public FacturaDto obtenerPorId(Long id) {
 
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Supervisor solo puede aumentar hasta 50.000");
+                Factura factura = facturaRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Factura no encontrada con id: " + id));
+
+                return facturaMapper.toDto(factura);
         }
 
-        if (subtotalActual.compareTo(BigDecimal.ZERO) == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No se puede recalcular una factura con subtotal 0");
+        @Override
+        public List<FacturaDto> listarFacturas() {
+
+                return facturaRepository.findAll()
+                                .stream()
+                                .map(facturaMapper::toDto)
+                                .toList();
         }
 
-        BigDecimal factor = nuevoSubtotal
-                .divide(subtotalActual, 10, RoundingMode.HALF_UP);
+        @Override
+        public FacturaDto recalcularFactura(Long idFactura, RecalculoFacturaDto dto) {
 
-        for (DetalleFactura detalle : factura.getDetalles()) {
+                Factura factura = facturaRepository.findById(idFactura)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Factura no encontrada con id: " + idFactura));
 
-            BigDecimal nuevoValor = detalle.getSubtotal().multiply(factor);
-            detalle.setSubtotal(nuevoValor);
+                BigDecimal subtotalActual = factura.getSubtotal();
+                BigDecimal nuevoSubtotal = dto.getNuevoSubtotal();
+
+                BigDecimal diferencia = nuevoSubtotal.subtract(subtotalActual);
+
+                if (diferencia.compareTo(BigDecimal.ZERO) > 0) {
+
+                        if (dto.getTipoUsuario() == TipoUsuario.OPERADOR &&
+                                        diferencia.compareTo(new BigDecimal("20000")) > 0) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                "Operador solo puede aumentar hasta 20.000");
+                        }
+
+                        if (dto.getTipoUsuario() == TipoUsuario.SUPERVISOR &&
+                                        diferencia.compareTo(new BigDecimal("50000")) > 0) {
+                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                "Supervisor solo puede aumentar hasta 50.000");
+                        }
+                }
+
+                if (subtotalActual.compareTo(BigDecimal.ZERO) == 0) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                        "No se puede recalcular una factura con subtotal 0");
+                }
+
+                BigDecimal factor = nuevoSubtotal
+                                .divide(subtotalActual, 10, RoundingMode.HALF_UP);
+
+                List<DetalleFactura> detalles = factura.getDetalles();
+                BigDecimal acumulado = BigDecimal.ZERO;
+                int lastIndex = detalles.size() - 1;
+
+                for (int i = 0; i < detalles.size(); i++) {
+
+                        DetalleFactura detalle = detalles.get(i);
+
+                        BigDecimal valor = detalle.getSubtotal()
+                                        .multiply(factor)
+                                        .setScale(2, RoundingMode.HALF_UP);
+
+                        if (i == lastIndex) {
+                                valor = nuevoSubtotal.subtract(acumulado);
+                        }
+
+                        detalle.setSubtotal(valor);
+                        acumulado = acumulado.add(valor);
+                }
+
+                factura.setSubtotal(nuevoSubtotal);
+
+                BigDecimal iva = nuevoSubtotal.multiply(new BigDecimal("0.19"));
+                factura.setIva(iva);
+                factura.setTotal(nuevoSubtotal.add(iva));
+
+                return facturaMapper.toDto(
+                                facturaRepository.save(factura));
         }
-
-        factura.setSubtotal(nuevoSubtotal);
-
-        BigDecimal iva = nuevoSubtotal.multiply(new BigDecimal("0.19"));
-        factura.setIva(iva);
-
-        factura.setTotal(nuevoSubtotal.add(iva));
-
-        return facturaMapper.toDto(
-                facturaRepository.save(factura));
-    }
 }

@@ -2,13 +2,9 @@ package com.equinorte.backend_equinorte.entity;
 
 import java.math.BigDecimal;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 
@@ -17,6 +13,7 @@ import jakarta.persistence.*;
 @Table(name = "detalle_facturas")
 @Data
 @AllArgsConstructor
+@NoArgsConstructor  
 public class DetalleFactura {
   @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
