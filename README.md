@@ -21,33 +21,49 @@ Hasta el momento se ha implementado el módulo de gestión de usuarios siguiendo
 
 ---
 
+### 📌 data.sql (Spring Boot)
+El archivo `data.sql`  permite insertar datos iniciales.
+
+📂 Ubicación:
+src/main/resources/data.sql
+
 # Estructura del Proyecto
 
 ```text
 src/main/java
 
 ├── controller
-│   └── UsersController
+│   ├── UsersController
+│   └── FacturaController
 │
 ├── dto
-│   └── UsersDto
+│   ├── UsersDto
+│   ├── FacturaDto
+│   └── DetalleFacturaDto
 │
 ├── entity
 │   ├── Users
-│   └── TipoUsuario
+│   ├── TipoUsuario
+│   ├── Factura
+│   └── DetalleFactura
 │
 ├── mapper
-│   └── UsersMapper
+│   ├── UsersMapper
+│   ├── FacturaMapper
+│   └── DetalleFacturaMapper
 │
 ├── repository
-│   └── UsersRepository
+│   ├── UsersRepository
+│   ├── FacturaRepository
+│   └── DetalleFacturaRepository
 │
 ├── service
-│   └── UsersService
+│   ├── UsersService
+│   └── FacturaService
 │
 └── service/impl
-    └── UsersServiceImpl
-```
+    ├── UsersServiceImpl
+    └── FacturaServiceImpl
 
 ---
 
@@ -271,15 +287,117 @@ DELETE /api/users/{id}
 
 ---
 
-# Estado Actual
 
-Actualmente se encuentra finalizado el módulo de usuarios:
 
-- Entity
-- DTO
-- Repository
-- Mapper
-- Service
-- ServiceImpl
-- Controller
+# Módulo de Facturación
+
+## Entidad Factura
+
+Representa la cabecera de una factura.
+
+Campos principales:
+
+- idFactura
+- numeroFactura (único)
+- subtotal
+- iva
+- total
+- fechaCreacion
+- fechaActualizacion
+
+Relación:
+
+- Una Factura tiene una relación OneToMany con DetalleFactura.
+
+---
+
+## Entidad DetalleFactura
+
+Campos principales:
+
+- idDetalle
+- producto
+- cantidad
+- precioUnitario
+- subtotal
+
+Relación:
+
+- Muchos DetalleFactura pertenecen a una Factura.
+
+---
+
+## DTO FacturaDto
+
+- idFactura
+- numeroFactura
+- lista de detalles
+
+---
+
+## DTO DetalleFacturaDto
+
+- idDetalle
+- producto
+- cantidad
+- precioUnitario
+
+---
+
+## Reglas de Negocio
+
+- Una factura tiene múltiples detalles.
+- El número de factura es único.
+- El cálculo de subtotal, IVA y total está definido en la entidad Factura.
+- La persistencia de detalles se realiza en cascada desde Factura.
+- No existe relación con Users.
+
+---
+
+## Repositories
+
+### FacturaRepository
+- findByNumeroFactura()
+- existsByNumeroFactura()
+
+### DetalleFacturaRepository
+- findByFacturaIdFactura()
+
+---
+
+## Estado del Proyecto
+
+✔ Usuarios implementado  
+✔ Facturación implementado  
+✔ Relación Factura → DetalleFactura  
+✔ Arquitectura en capas  
+
+
+## Estructura del módulo Factura
+
+### Endpoints disponibles
+
+#### Crear factura
+
+-   **POST** `/api/facturas/crear`
+
+#### Listar facturas
+
+-   **GET** `/api/facturas`
+
+#### Obtener factura por ID
+
+-   **GET** `/api/facturas/buscar/{id}`
+
+#### Actualizar factura
+
+-   **PUT** `/api/facturas/actualizar/{id}`
+
+#### Recalcular factura
+
+-   **PUT** `/api/facturas/recalcular/{id}`
+
+#### Eliminar factura
+
+-   **DELETE** `/api/facturas/{id}`
 
