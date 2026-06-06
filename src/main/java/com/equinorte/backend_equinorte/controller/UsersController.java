@@ -24,6 +24,7 @@ public class UsersController {
     @Autowired
     private UsersService usersService;
 
+    //Crear usuario
     @PostMapping("/crear")
     public ResponseEntity<?> registrarUser(@RequestBody UsersDto usersDto) {
 
@@ -33,12 +34,14 @@ public class UsersController {
                 .body(usuarioRegistrado);
     }
 
+    //Listar todos los usuarios
     @GetMapping
     public ResponseEntity<List<UsersDto>> listarUsers() {
         List<UsersDto> usuarios = usersService.listarUsers();
         return ResponseEntity.ok(usuarios);
     }
 
+    //Buscar usuario por ID
     @GetMapping("/buscar/id/{id}")
     public ResponseEntity<UsersDto> buscarUserPorId(@PathVariable Long id) {
 
@@ -47,6 +50,7 @@ public class UsersController {
         return ResponseEntity.ok(usuario);
     }
 
+    //Buscar usuario por email
     @GetMapping("/buscar/email/{email}")
     public ResponseEntity<?> buscarUserPorEmail(@PathVariable String email) {
 
@@ -55,6 +59,7 @@ public class UsersController {
         return ResponseEntity.ok(usuario);
     }
 
+    //Buscar usuario por tipo de usuario
     @GetMapping("/tipo/{tipoUsuario}")
     public ResponseEntity<?> listarPorTipoUsuario(@PathVariable String tipoUsuario) {
 
@@ -72,6 +77,7 @@ public class UsersController {
                 usersService.listarPorTipoUsuario(tipo));
     }
 
+    //Actualizar usuario por ID
  @PutMapping("/actualizar/{id}")
 public ResponseEntity<UsersDto> actualizarUser(
         @PathVariable Long id,
@@ -83,6 +89,8 @@ public ResponseEntity<UsersDto> actualizarUser(
 
     return ResponseEntity.ok(usuarioActualizado);
 }
+
+//Eliminar usuario por ID
  @DeleteMapping("/{id}")
 public ResponseEntity<?> eliminarUser(@PathVariable Long id) {
 

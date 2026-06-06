@@ -21,10 +21,10 @@ Hasta el momento se ha implementado el módulo de gestión de usuarios siguiendo
 
 ---
 
-### 📌 data.sql (Spring Boot)
+### data.sql (Spring Boot)
 El archivo `data.sql`  permite insertar datos iniciales.
 
-📂 Ubicación:
+Ubicación:
 src/main/resources/data.sql
 
 # Estructura del Proyecto
@@ -376,7 +376,7 @@ findByNumeroFactura()
 existsByNumeroFactura()
 ```
 
-## 📦 DetalleFacturaRepository
+##  DetalleFacturaRepository
 
 Métodos implementados:
 
@@ -386,7 +386,7 @@ findByFacturaIdFactura()
 
 ---
 
-# 📌 Service
+#  Service
 
 ##  FacturaService
 
@@ -543,15 +543,3 @@ DELETE /api/facturas/{id}
 
 ---
 
-# Estado del Módulo
-
-## ✔ Funcionalidades Implementadas
-
-- ✔ CRUD completo de facturas
-- ✔ Relación Factura → DetalleFactura
-- ✔ Reglas de negocio por tipo de usuario
-- ✔ Recalculo proporcional implementado
-- ✔ Arquitectura en capas
-- ✔ API REST funcional
-
----

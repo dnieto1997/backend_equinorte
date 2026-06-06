@@ -19,7 +19,7 @@ public class FacturaController {
     @Autowired
     private FacturaService facturaService;
 
-
+     //Crear facturas 
     @PostMapping("/crear")
     public ResponseEntity<FacturaDto> crearFactura(@RequestBody FacturaDto facturaDto) {
 
@@ -29,7 +29,7 @@ public class FacturaController {
                 .body(creada);
     }
 
-    // LISTAR FACTURAS
+     // Listar todas las facturas
     @GetMapping
     public ResponseEntity<List<FacturaDto>> listarFacturas() {
 
@@ -38,7 +38,7 @@ public class FacturaController {
         return ResponseEntity.ok(facturas);
     }
 
-    
+    //Buscar factura por ID
     @GetMapping("/buscar/{id}")
     public ResponseEntity<FacturaDto> obtenerPorId(@PathVariable Long id) {
 
@@ -47,7 +47,9 @@ public class FacturaController {
         return ResponseEntity.ok(factura);
     }
 
-   
+    
+
+    //Actualizar factura por ID
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<FacturaDto> actualizarFactura(
             @PathVariable Long id,
@@ -60,6 +62,7 @@ public class FacturaController {
     }
 
     
+    //Recalcular factura por ID 
     @PutMapping("/recalcular/{id}")
     public ResponseEntity<FacturaDto> recalcularFactura(
             @PathVariable Long id,
@@ -71,7 +74,7 @@ public class FacturaController {
         return ResponseEntity.ok(resultado);
     }
 
-    
+    //Eliminar factura por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarFactura(@PathVariable Long id) {
 

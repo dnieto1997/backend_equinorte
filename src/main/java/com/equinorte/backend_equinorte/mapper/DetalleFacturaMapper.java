@@ -13,7 +13,7 @@ public class DetalleFacturaMapper {
     @Autowired
     private ModelMapper modelMapper;
 
-    // ENTITY → DTO
+    
     public DetalleFacturaDto toDto(DetalleFactura detalle) {
         return modelMapper.map(detalle, DetalleFacturaDto.class);
     }
