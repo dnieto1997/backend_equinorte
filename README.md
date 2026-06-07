@@ -283,6 +283,19 @@ http://localhost:8080/api
 POST /users/registrar
 ```
 
+### Body de Ejemplo
+
+```json
+{
+  "nombre": "Dairo",
+  "email": "operador@gmail.com",
+  "tipoUsuario": "OPERADOR"
+}
+```
+
+> **Nota:** El campo `tipoUsuario` únicamente admite los valores `OPERADOR` y `SUPERVISOR`.
+
+
 ## Listar Usuarios
 
 ```http
@@ -307,11 +320,32 @@ GET /users/buscar/email/{email}
 GET /users/tipo/{tipoUsuario}
 ```
 
+> **Nota:** El campo `tipoUsuario` únicamente admite los valores `OPERADOR` y `SUPERVISOR`.
+
 ## Actualizar Usuario
 
-```http
+```http id="2"
 PUT /users/actualizar/{id}
 ```
+
+### Parámetros
+
+| Parámetro | Descripción                                       |
+| --------- | ------------------------------------------------- |
+| id        | Identificador del usuario que se desea actualizar |
+
+### Body de Ejemplo
+
+```json id="2"
+{
+  "nombre": "Dairo",
+  "email": "dnieto6198@gmail.com",
+  "tipoUsuario": "OPERADOR"
+}
+```
+
+> **Nota:** El parámetro `{id}` corresponde al identificador del usuario que será actualizado. El campo `tipoUsuario` únicamente admite los valores `OPERADOR` y `SUPERVISOR`.
+
 
 ## Eliminar Usuario
 
@@ -328,6 +362,24 @@ DELETE /users/{id}
 ```http
 POST /facturas/crear
 ```
+
+### Body de Ejemplo
+
+```json
+{
+  "numeroFactura": "FAC-0001",
+  "detalles": [
+    {
+      "producto": "Alquiler de excavadora hidráulica 320D",
+      "cantidad": 1,
+      "precioUnitario": 850000
+    }
+  ]
+}
+```
+
+> El sistema calcula automáticamente el subtotal, IVA (19%) y total de la factura.
+
 
 ## Listar Facturas
 
@@ -347,11 +399,44 @@ GET /facturas/buscar/{id}
 PUT /facturas/actualizar/{id}
 ```
 
+### Body de Ejemplo
+
+```json
+{
+  "detalles": [
+    {
+      "producto": "Impresora multifuncional Epson",
+      "cantidad": 1,
+      "precioUnitario": 950000
+    }
+  ]
+}
+```
+
+
 ## Recalcular Factura
 
-```http
+```http id="d8r6km"
 PUT /facturas/recalcular/{id}
 ```
+
+### Parámetros
+
+| Parámetro | Descripción                                         |
+| --------- | --------------------------------------------------- |
+| id        | Identificador de la factura que se desea recalcular |
+
+### Body de Ejemplo
+
+```json id="10"
+{
+  "nuevoSubtotal": 20000,
+  "tipoUsuario": "SUPERVISOR"
+}
+```
+
+> El parámetro `{id}` corresponde al identificador de la factura que será recalculada.
+
 
 ## Eliminar Factura
 
