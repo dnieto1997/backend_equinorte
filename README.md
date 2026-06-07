@@ -83,6 +83,33 @@ mvn spring-boot:run
 
 ---
 
+## Configuración de CORS
+
+El proyecto incluye una configuración CORS ubicada en:
+
+```text
+src/main/java/com/equinorte/backend_equinorte/config/CorsConfig.java
+```
+
+```java
+@Configuration
+public class CorsConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:4200")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+}
+```
+
+> **Importante:** Si el frontend se ejecuta en una URL o puerto diferente al configurado (`http://localhost:4200`), deberá actualizar el valor de `allowedOrigins()` para permitir las peticiones desde el nuevo origen.
+
+
 # Generación Automática de Tablas
 
 Las tablas se generan automáticamente mediante JPA al iniciar la aplicación gracias a la siguiente configuración:

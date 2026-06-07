@@ -1,25 +1,18 @@
-
 INSERT INTO users (
     email,
     fecha_actualizacion,
     fecha_creacion,
     nombre,
     tipo_usuario
-) VALUES (
+) VALUES 
+(
     'operador@equinorte.com',
     NULL,
     NOW(),
     'Usuario Operador',
     'OPERADOR'
-);
-
-INSERT INTO users (
-    email,
-    fecha_actualizacion,
-    fecha_creacion,
-    nombre,
-    tipo_usuario
-) VALUES (
+),
+(
     'supervisor@equinorte.com',
     NULL,
     NOW(),
