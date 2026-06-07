@@ -14,8 +14,15 @@ public class FacturaMapper {
 
         FacturaDto dto = new FacturaDto();
 
-        dto.setIdFactura(factura.getIdFactura());
+         dto.setIdFactura(factura.getIdFactura());
         dto.setNumeroFactura(factura.getNumeroFactura());
+
+        dto.setSubtotal(factura.getSubtotal());
+        dto.setIva(factura.getIva());
+        dto.setTotal(factura.getTotal());
+
+        dto.setFechaCreacion(factura.getFechaCreacion());
+       
 
         dto.setDetalles(
                 factura.getDetalles()
@@ -26,6 +33,7 @@ public class FacturaMapper {
                             det.setProducto(d.getProducto());
                             det.setCantidad(d.getCantidad());
                             det.setPrecioUnitario(d.getPrecioUnitario());
+                            det.setSubtotal(d.getSubtotal());
                             return det;
                         }).toList()
         );

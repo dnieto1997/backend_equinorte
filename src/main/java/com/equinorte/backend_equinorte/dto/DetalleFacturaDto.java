@@ -16,4 +16,7 @@ public class DetalleFacturaDto {
     private Integer cantidad;
 
     private BigDecimal precioUnitario;
+   
+    private BigDecimal subtotal;
+    
 }

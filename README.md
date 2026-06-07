@@ -2,544 +2,393 @@
 
 ## Descripción
 
-Este proyecto corresponde al desarrollo del backend para la prueba técnica de Equinorte utilizando Spring Boot, JPA y MySQL.
+Este proyecto corresponde al desarrollo del backend para la prueba técnica de Equinorte utilizando **Spring Boot**, **Spring Data JPA** y **MySQL**.
 
-Hasta el momento se ha implementado el módulo de gestión de usuarios siguiendo una arquitectura en capas para mantener una adecuada separación de responsabilidades y facilitar el mantenimiento del código.
+Se implementó un sistema de gestión de usuarios y facturación siguiendo una arquitectura en capas (**Controller, Service, Repository, DTO y Mapper**) con el objetivo de garantizar escalabilidad, mantenibilidad y una correcta separación de responsabilidades.
 
 ---
 
 # Tecnologías Utilizadas
 
-- Java 21
-- Spring Boot
-- Spring Web
-- Spring Data JPA
-- MySQL
-- Lombok
-- ModelMapper
-- Maven
+* Java 21
+* Spring Boot
+* Spring Web
+* Spring Data JPA
+* MySQL 8+
+* Lombok
+* ModelMapper
+* Maven
 
 ---
 
-### data.sql (Spring Boot)
-El archivo `data.sql`  permite insertar datos iniciales.
+# Base de Datos
 
-Ubicación:
+El proyecto utiliza **MySQL** como motor de base de datos.
+
+## Creación de la Base de Datos
+
+Antes de ejecutar la aplicación, se debe crear una base de datos en MySQL. Puede utilizar el siguiente script como ejemplo:
+
+```sql
+CREATE DATABASE equinorte;
+```
+
+> **Importante:** Si decide utilizar un nombre diferente para la base de datos, deberá actualizar la propiedad `spring.datasource.url` en el archivo `application.properties` para que coincida con el nombre configurado que esta en la carpeta src/main/resources/application.properties
+
+
+# Configuración del Proyecto
+
+
+
+Editar el archivo:
+
+```text
+src/main/resources/application.properties
+```
+
+Configurar los datos de conexión según la base de datos creada en el entorno local:
+
+spring.datasource.url=jdbc:mysql://localhost:3306/equinorte
+spring.datasource.username=root
+spring.datasource.password=tu_password
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+Importante:
+
+Reemplazar equinorte por el nombre de la base de datos creada, en caso de utilizar uno diferente.
+Verificar que el puerto configurado en la URL corresponda al puerto donde se encuentra ejecutándose MySQL (por defecto 3306).
+Actualizar username y password con las credenciales configuradas en el servidor MySQL local.
+
+---
+
+# Requisitos
+
+* Java 21
+* Maven 3+
+* MySQL 8+
+
+---
+
+# Ejecución del Proyecto
+
+## Ejecutar en modo desarrollo
+
+```bash
+mvn spring-boot:run
+```
+
+
+---
+
+# Generación Automática de Tablas
+
+Las tablas se generan automáticamente mediante JPA al iniciar la aplicación gracias a la siguiente configuración:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+No es necesario crear manualmente la estructura de la base de datos.
+
+---
+
+# Datos Iniciales
+
+El proyecto incluye el archivo:
+
+```text
 src/main/resources/data.sql
+```
 
-# Estructura del Proyecto
+Importante: El archivo data.sql contiene sentencias INSERT con datos iniciales necesarios para las pruebas del sistema. Es necesario ejecutar este archivo en la base de datos para cargar los registros de ejemplo y garantizar el correcto funcionamiento de las funcionalidades implementadas.
+
+---
+
+# Arquitectura del Proyecto
 
 ```text
 src/main/java
 
 ├── controller
-│   ├── UsersController
-│   └── FacturaController
-│
 ├── dto
-│   ├── UsersDto
-│   ├── FacturaDto
-│   └── DetalleFacturaDto
-│
 ├── entity
-│   ├── Users
-│   ├── TipoUsuario
-│   ├── Factura
-│   └── DetalleFactura
-│
 ├── mapper
-│   ├── UsersMapper
-│   ├── FacturaMapper
-│   └── DetalleFacturaMapper
-│
 ├── repository
-│   ├── UsersRepository
-│   ├── FacturaRepository
-│   └── DetalleFacturaRepository
-│
 ├── service
-│   ├── UsersService
-│   └── FacturaService
-│
 └── service/impl
-    ├── UsersServiceImpl
-    └── FacturaServiceImpl
+```
+
+### Descripción de Capas
+
+| Capa       | Responsabilidad                   |
+| ---------- | --------------------------------- |
+| Controller | Exposición de endpoints REST      |
+| Service    | Lógica de negocio                 |
+| Repository | Acceso a datos mediante JPA       |
+| DTO        | Transferencia de datos            |
+| Mapper     | Conversión entre entidades y DTOs |
+| Entity     | Modelado de la base de datos      |
 
 ---
 
-# Entidad Users
+# Módulo de Usuarios
 
-Se creó la entidad Users para representar los usuarios del sistema.
+## Entidad Users
 
-Cada usuario posee:
+### Campos
 
-- idUser
-- nombre
-- email
-- tipoUsuario
+* idUser
+* nombre
+* email
+* tipoUsuario
 
-El campo tipoUsuario permite identificar el rol del usuario dentro de la aplicación.
-
-Tipos disponibles:
-
-```java
-OPERADOR
-SUPERVISOR
-```
-
-Estos roles serán utilizados posteriormente para validar las restricciones de modificación de facturas solicitadas en la prueba.
-
----
-
-# DTO (UsersDto)
-
-Se implementó un DTO para desacoplar la información expuesta por la API de la entidad persistida en base de datos.
-
-Objetivos:
-
-- Validar datos de entrada.
-- Evitar exponer directamente las entidades.
-- Mantener una arquitectura más limpia.
-
-Campos:
-
-```java
-private Long idUser;
-private String nombre;
-private String email;
-private TipoUsuario tipoUsuario;
-```
-
----
-
-# Repository (UsersRepository)
-
-Se implementó el repositorio utilizando Spring Data JPA.
-
-Responsabilidades:
-
-- Acceso a la base de datos.
-- Consultas de usuarios.
-- Persistencia de información.
-
-Métodos implementados:
-
-```java
-findByIdUser()
-findByEmail()
-findByTipoUsuario()
-findByNombre()
-```
-
----
-
-# Mapper (UsersMapper)
-
-Se implementó ModelMapper para convertir automáticamente entre DTOs y entidades.
-
-Objetivos:
-
-- Reducir código repetitivo.
-- Facilitar conversiones entre capas.
-- Mantener el Service más limpio.
-
-Métodos:
-
-```java
-toEntity()
-toDto()
-```
-
-Conversión:
+### Tipos de Usuario
 
 ```text
-UsersDto → Users
-Users → UsersDto
-```
-
----
-
-# Service (UsersService)
-
-Se creó una interfaz para definir los contratos del módulo de usuarios.
-
-Operaciones disponibles:
-
-```java
-crearUser()
-listarUsers()
-obtenerUserPorId()
-obtenerUserPorEmail()
-listarPorTipoUsuario()
-actualizarUser()
-eliminarUser()
-```
-
-Beneficios:
-
-- Separación de responsabilidades.
-- Facilita futuras implementaciones.
-- Mejora mantenibilidad y escalabilidad.
-
----
-
-# ServiceImpl (UsersServiceImpl)
-
-Se desarrolló la implementación de la lógica de negocio para usuarios.
-
-Responsabilidades:
-
-- Validar existencia de usuarios.
-- Gestionar operaciones CRUD.
-- Convertir entidades y DTOs mediante el mapper.
-- Interactuar con el repositorio.
-
-Funciones implementadas:
-
-### Crear usuario
-
-Permite registrar nuevos usuarios.
-
-### Listar usuarios
-
-Obtiene todos los usuarios registrados.
-
-### Buscar usuario por ID
-
-Consulta un usuario específico.
-
-### Buscar usuario por Email
-
-Permite localizar usuarios mediante correo electrónico.
-
-### Filtrar por tipo de usuario
-
-Permite obtener usuarios:
-
-```java
 OPERADOR
 SUPERVISOR
 ```
 
-### Actualizar usuario
+## Funcionalidades
 
-Actualiza información existente.
-
-### Eliminar usuario
-
-Elimina un usuario del sistema.
-
----
-
-# Controller (UsersController)
-
-Se implementó la capa REST para exponer los servicios mediante endpoints HTTP.
-
-Endpoints disponibles:
-
-## Crear Usuario
-
-```http
-POST /api/users/registrar
-```
-
-## Listar Usuarios
-
-```http
-GET /api/users
-```
-
-## Buscar Usuario por ID
-
-```http
-GET /api/users/buscar/id/{id}
-```
-
-## Buscar Usuario por Email
-
-```http
-GET /api/users/buscar/email/{email}
-```
-
-## Obtener Usuarios por Tipo
-
-```http
-GET /api/users/tipo/{tipoUsuario}
-```
-
-Ejemplo:
-
-```http
-GET /api/users/tipo/OPERADOR
-```
-
-## Actualizar Usuario
-
-```http
-PUT /api/users/actualizar/{id}
-```
-
-## Eliminar Usuario
-
-```http
-DELETE /api/users/{id}
-```
+* Crear usuario
+* Listar usuarios
+* Buscar usuario por ID
+* Buscar usuario por email
+* Filtrar usuarios por tipo
+* Actualizar usuario
+* Eliminar usuario
 
 ---
 
+# Módulo de Facturación
 
-
-##  Factura
+## Factura
 
 Representa la cabecera de la factura.
 
 ### Campos
 
-| Campo | Tipo | Descripción |
-|------|------|------|
-| idFactura | Long | Identificador único |
-| numeroFactura | String | Número único de factura |
-| subtotal | BigDecimal | Suma de los detalles |
-| iva | BigDecimal | IVA calculado (19%) |
-| total | BigDecimal | Total final |
-| fechaCreacion | LocalDateTime | Fecha automática de creación |
-| fechaActualizacion | LocalDateTime | Fecha automática de actualización |
+* idFactura
+* numeroFactura
+* subtotal
+* iva
+* total
+* fechaCreacion
+* fechaActualizacion
 
-### Relaciones
+### Relación
 
-- Una factura tiene múltiples `DetalleFactura`
-- Relación `OneToMany`
-- `CascadeType.ALL`
-- `orphanRemoval = true`
+```text
+Factura (1) ------ (N) DetalleFactura
+```
+
+Una factura puede contener múltiples detalles.
 
 ---
 
-##  DetalleFactura
-
-Representa cada producto asociado a una factura.
+## DetalleFactura
 
 ### Campos
 
-| Campo | Tipo | Descripción |
-|------|------|------|
-| idDetalle | Long | Identificador único |
-| producto | String | Nombre del producto |
-| cantidad | Integer | Cantidad del producto |
-| precioUnitario | BigDecimal | Precio unitario |
-| subtotal | BigDecimal | Subtotal calculado |
+* idDetalle
+* producto
+* cantidad
+* precioUnitario
+* subtotal
 
-### Relaciones
+### Relación
 
-- Muchos detalles pertenecen a una factura
-- Relación `ManyToOne`
-
----
-
-#  DTOs
-
-##  FacturaDto
-
-```java
-Long idFactura;
-String numeroFactura;
-List<DetalleFacturaDto> detalles;
-```
-
-##  DetalleFacturaDto
-
-```java
-Long idDetalle;
-String producto;
-Integer cantidad;
-BigDecimal precioUnitario;
-```
-
-##  RecalculoFacturaDto
-
-DTO utilizado para modificar el subtotal con validación de roles.
-
-```java
-BigDecimal nuevoSubtotal;
-TipoUsuario tipoUsuario;
-```
-
----
-
-#  Repositorios
-
-##  FacturaRepository
-
-Métodos implementados:
-
-```java
-findByNumeroFactura()
-existsByNumeroFactura()
-```
-
-##  DetalleFacturaRepository
-
-Métodos implementados:
-
-```java
-findByFacturaIdFactura()
-```
-
----
-
-#  Service
-
-##  FacturaService
-
-Define las operaciones principales del módulo:
-
-```java
-crearFactura()
-actualizarFactura()
-eliminarFactura()
-obtenerPorId()
-listarFacturas()
-recalcularFactura()
+```text
+DetalleFactura (N) ------ (1) Factura
 ```
 
 ---
 
 # Lógica de Negocio
 
-##  Crear Factura
+## Creación de Facturas
 
-### Validaciones
+Para cada producto:
 
-- El número de factura debe ser único.
-
-### Proceso
-
-1. Calcula el subtotal de cada detalle:
-
-```java
-subtotal = precioUnitario * cantidad
+```text
+subtotalDetalle = cantidad × precioUnitario
 ```
 
-2. Calcula:
-   - Subtotal general
-   - IVA (19%)
-   - Total final
+Posteriormente se calcula:
 
-3. Guarda la factura junto con sus detalles usando cascada.
+```text
+Subtotal General
+IVA (19%)
+Total Factura
+```
+
+### Fórmulas
+
+```text
+IVA = subtotal × 0.19
+
+TOTAL = subtotal + IVA
+```
 
 ---
 
-##  Actualizar Factura
+## Recalcular Factura
+
+Permite modificar el subtotal de una factura redistribuyendo proporcionalmente el valor entre todos los detalles asociados.
+
+### Restricciones por Tipo de Usuario
+
+| Tipo Usuario | Incremento Máximo |
+| ------------ | ----------------- |
+| OPERADOR     | $20.000           |
+| SUPERVISOR   | $50.000           |
 
 ### Proceso
 
-1. Busca la factura por ID.
-2. Elimina detalles anteriores.
-3. Agrega los nuevos detalles.
-4. Recalcula:
-   - Subtotal
-   - IVA
-   - Total
+1. Obtener subtotal actual.
+2. Validar incremento permitido según el tipo de usuario.
+3. Calcular diferencia.
+4. Obtener factor proporcional:
 
----
-
-##  Eliminar Factura
-
-### Proceso
-
-- Valida existencia.
-- Elimina factura y detalles asociados.
-
----
-
-##  Obtener Factura
-
-### Proceso
-
-- Busca factura por ID.
-- Lanza excepción si no existe.
-
----
-
-##  Listar Facturas
-
-### Proceso
-
-- Retorna todas las facturas registradas.
-
----
-
-#  Recalcular Factura
-
-Permite modificar el subtotal aplicando reglas de negocio según el tipo de usuario.
-
-##  Reglas por Rol
-
-| Tipo Usuario | Incremento Máximo Permitido |
-|------|------|
-| OPERADOR | 20.000 |
-| SUPERVISOR | 50.000 |
-
-##  Proceso de Recalculo
-
-1. Calcula la diferencia entre subtotales.
-2. Valida permisos según el rol.
-3. Calcula el factor proporcional:
-
-```java
+```text
 factor = nuevoSubtotal / subtotalActual
 ```
 
-4. Ajusta proporcionalmente cada detalle.
-5. Recalcula:
-   - Subtotal
-   - IVA (19%)
-   - Total final
+5. Ajustar subtotales de los detalles.
+6. Recalcular subtotal general.
+7. Recalcular IVA.
+8. Recalcular total de la factura.
 
 ---
 
-# API REST - Facturas
+# API REST
 
 ## Base URL
 
-```http
-/api/facturas
+```text
+http://localhost:8080/api
 ```
+
+---
+
+# Endpoints de Usuarios
+
+## Crear Usuario
+
+```http
+POST /users/registrar
+```
+
+## Listar Usuarios
+
+```http
+GET /users
+```
+
+## Buscar por ID
+
+```http
+GET /users/buscar/id/{id}
+```
+
+## Buscar por Email
+
+```http
+GET /users/buscar/email/{email}
+```
+
+## Filtrar por Tipo de Usuario
+
+```http
+GET /users/tipo/{tipoUsuario}
+```
+
+## Actualizar Usuario
+
+```http
+PUT /users/actualizar/{id}
+```
+
+## Eliminar Usuario
+
+```http
+DELETE /users/{id}
+```
+
+---
+
+# Endpoints de Facturación
 
 ## Crear Factura
 
 ```http
-POST /api/facturas/crear
+POST /facturas/crear
 ```
 
 ## Listar Facturas
 
 ```http
-GET /api/facturas
+GET /facturas
 ```
 
-## Obtener Factura por ID
+## Buscar Factura por ID
 
 ```http
-GET /api/facturas/buscar/{id}
+GET /facturas/buscar/{id}
 ```
 
 ## Actualizar Factura
 
 ```http
-PUT /api/facturas/actualizar/{id}
+PUT /facturas/actualizar/{id}
 ```
 
 ## Recalcular Factura
 
 ```http
-PUT /api/facturas/recalcular/{id}
+PUT /facturas/recalcular/{id}
 ```
 
-##  Eliminar Factura
+## Eliminar Factura
 
 ```http
-DELETE /api/facturas/{id}
+DELETE /facturas/{id}
 ```
 
 ---
 
+# Características Implementadas
+
+ Arquitectura en capas
+
+ DTOs para intercambio de información
+
+ Mapeo de entidades mediante ModelMapper
+
+ Persistencia con Spring Data JPA
+
+ Relación OneToMany / ManyToOne
+
+ Generación automática de tablas
+
+ Datos iniciales mediante data.sql
+
+ Validación de reglas de negocio
+
+ Cálculo automático de IVA y total
+
+ Recalculo proporcional de facturas según rol de usuario
+
+---
+
+# Autor
+
+Dairo Nieto
+
+Prueba Técnica Backend Equinorte
+
+Desarrollado con Spring Boot, JPA y MySQL.
